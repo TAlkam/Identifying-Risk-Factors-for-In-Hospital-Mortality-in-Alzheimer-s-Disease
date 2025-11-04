@@ -1,3 +1,24 @@
+label_dict = {
+    "female": "Female",
+    "elective": "Elective Admission",
+    "aweekend": "Weekend Admission",
+    "sepsis": "Sepsis",
+    "arf": "Acute Respiratory Failure",
+    "aki": "Acute Kidney Injury",
+    "uti": "Urinary Tract Infection",
+    "asp": "Aspiration Pneumonia",
+    "malnut": "Malnutrition",
+    "dysph": "Dysphagia",
+    "pressulc": "Pressure Ulcer",
+    "chf": "Congestive Heart Failure",
+    "cad": "Coronary Artery Disease",
+    "afib": "Atrial Fibrillation",
+    "cva": "Stroke (Cerebrovascular Accident)",
+    "anemia": "Anemia",
+    "hypoth": "Hypothyroidism",
+    "dnr": "Do Not Resuscitate",
+    "pall": "Palliative Care"
+}
 
  ##labeling and Table 2 --------------------------------------------------------------------------------------------------------------
  
@@ -211,3 +232,4 @@ _write_factor_block HOSP_DIVISION
 
 * Formatting helpers (optional)
 putexcel A3:D3, bold
+
