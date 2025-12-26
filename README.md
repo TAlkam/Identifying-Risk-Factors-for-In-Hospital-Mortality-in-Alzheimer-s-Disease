@@ -1,38 +1,91 @@
 # Identifying-Risk-Factors-for-In-Hospital-Mortality-in-Alzheimer-s-Disease
 
-# 🧠 Identifying Risk Factors for In-Hospital Mortality in Alzheimer’s Disease
+# 🧠 Risk Stratification for In-Hospital Mortality in Alzheimer’s Disease
 
-This repository contains a reproducible pipeline and analysis notebook for identifying high-impact predictors of **in-hospital mortality among patients with Alzheimer’s Disease (AD)** using **dual modeling approaches**: traditional logistic regression and explainable machine learning (XGBoost + SHAP). The project utilizes nationally representative data from the **2017 HCUP Nationwide Inpatient Sample (NIS)** and follows a rigorous methodology suitable for publication and clinical translation.
+This repository contains a reproducible analysis pipeline for risk stratification of **in-hospital mortality among hospitalized patients with Alzheimer’s disease (AD)** using a **dual approach**: survey-weighted regression and explainable machine learning (**XGBoost + SHAP**). The project uses nationally representative data from the **2017 HCUP Nationwide Inpatient Sample (NIS)** and implements a leakage-safe preprocessing and evaluation framework designed for publication-quality reporting.
+
+---
 
 ## 📌 Overview
 
-Older adults with Alzheimer’s disease are at elevated risk of dying during hospitalization. This project aims to:
+Older adults with Alzheimer’s disease are at elevated risk of in-hospital mortality. This project aims to:
 
-* Compare **survey-weighted logistic regression** vs. **XGBoost** classifiers.
-* Identify top predictors using **odds ratios** and **SHAP values**.
-* Evaluate performance through **AUROC**, **AUPRC**, **Brier score**, and **log loss**.
-* Perform **sensitivity analysis** by removing end-of-life indicators (palliative care and DNR).
-* Provide interpretable visualizations and feature explanations for clinical audiences.
+- Compare **survey-weighted logistic regression** (interpretable baseline) vs. **XGBoost** (nonlinear model).
+- Identify key predictors using **adjusted odds ratios** (regression) and **SHAP values** (XGBoost).
+- Evaluate discrimination and calibration using **AUROC**, **AUPRC**, **Brier score**, and **log loss**.
+- Perform a **restricted-model sensitivity analysis** excluding end-of-life indicators (**DNR** and **palliative care**) to assess whether physiologic risk signals persist.
+- Generate publication-ready figures and tables for clinical interpretation.
 
-## 📊 Methods
+---
 
-* **Data**: HCUP NIS 2017 subset of patients aged ≥60 years with Alzheimer's Disease.
-* **Outcome**: In-hospital mortality (`died`).
-* **Features**: Age, sex, comorbidities (from top 20 ICD-10 diagnoses), hospital characteristics, DNR and palliative care flags.
-* **Modeling**:
+## 📊 Data and Methods
 
-  * Logistic regression (survey-weighted)
-  * XGBoost with SHAP-based explainability
-* **Sensitivity Analysis**: Models were re-run after excluding `dnr` and `pall` to test generalizability.
+### Data
+- **Source**: HCUP NIS 2017
+- **Cohort**: Patients aged ≥60 years with Alzheimer’s disease diagnosis
+- **Outcome**: In-hospital mortality (`died`)
+
+### Features
+- Demographics (e.g., age, sex)
+- Comorbidities / diagnoses (binary indicators from the selected diagnosis set)
+- Hospital characteristics and system-level variables
+- End-of-life indicators (DNR, palliative care) for the **full** model
+
+### Evaluation Strategy (important)
+- **5-fold hospital-grouped cross-validation** using `GroupKFold` clustered by hospital identifier (e.g., `hosp_nis`)
+- **Leakage-safe preprocessing**: imputation and scaling are fit **within each training fold** and applied to the held-out fold
+- **Survey/HCUP discharge weights** are incorporated as **sample weights** in model fitting and evaluation
+
+### Models
+- **Survey-weighted logistic regression**
+- **XGBoost (binary:logistic)** with SHAP-based explainability
+
+---
+
+## 🔁 Restricted-Model Sensitivity Analysis
+
+To test robustness and clinical utility when explicit end-of-life documentation is unavailable, we re-ran the entire modeling pipeline after excluding:
+
+- `dnr`
+- `pall`
+
+The restricted analysis is evaluated using the **same GroupKFold hospital-clustered cross-validation** and the same leakage-safe preprocessing pipeline.
+
+---
+
+## 📈 Key Results (GroupKFold, 5-fold)
+
+### Full model (includes DNR + palliative care)
+- **Logistic Regression**: AUROC **0.8789**, AUPRC **0.3102**, Brier **0.0372**, LogLoss **0.1375**
+- **XGBoost**: AUROC **0.8866**, AUPRC **0.3238**, Brier **0.0364**, LogLoss **0.1337**
+
+### Restricted model (excludes DNR + palliative care)
+- **Logistic Regression**: AUROC **0.8059**, AUPRC **0.2056**, Brier **0.0403**, LogLoss **0.1569**
+- **XGBoost**: AUROC **0.8106**, AUPRC **0.2061**, Brier **0.0403**, LogLoss **0.1563**
+
+**Interpretation:** Removing end-of-life indicators decreases performance for both models, but the restricted model still identifies clinically meaningful physiologic risk signals (e.g., acute respiratory failure, sepsis, acute kidney injury, urinary tract infection, age), supporting risk stratification beyond terminal-care coding.
+
+---
+
+## 🧠 SHAP Explainability
+
+SHAP (SHapley Additive exPlanations) is used to interpret the XGBoost model:
+
+- **SHAP summary (beeswarm)**: direction + distribution of feature effects across admissions
+- **Mean(|SHAP|) bar plot**: global feature importance ranking
+- **Restricted-model SHAP bar plot**: importance after excluding DNR/palliative care
+
+These figures help translate model behavior into clinically interpretable signals.
+
+---
 
 ## 🚀 Getting Started
 
 ### 1. Clone the Repository
-
 ```bash
 git clone https://github.com/yourusername/ad-mortality-risk.git
 cd ad-mortality-risk
-```
+
 
 ### 2. Install Dependencies
 
